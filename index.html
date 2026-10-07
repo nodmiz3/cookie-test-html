@@ -1,80 +1,128 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Cookieデモ</title>
+<meta charset="UTF-8">
+<title>Cookie統合デモ</title>
+
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #000000;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: sans-serif;
+    transition: 0.2s;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+  }
+
+  .light { background: #ddd; }
+  .dark { background: #333; color: #fff; }
+</style>
 </head>
 <body>
-  <h1>Cookieで名前を記憶するデモ</h1>
 
-  <p id="greeting">はじめまして！名前を教えてください。</p>
+<h1>Cookie統合デモ（名前＋テーマ）</h1>
 
-  <input type="text" id="nameInput" placeholder="名前を入力">
-  <button id="saveBtn">保存</button>
-  <button id="clearBtn">Cookie削除</button>
+<!-- 名前保存 -->
+<p id="greeting">はじめまして！名前を教えてください。</p>
+<input type="text" id="nameInput" placeholder="名前を入力">
+<button class="btn" id="saveNameBtn">名前を保存</button>
+<button class="btn" id="clearNameBtn">名前Cookie削除</button>
 
-  <script>
-    // Cookieをセット
-    function setCookie(name, value, days) {
-      let expires = "";
-      if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-      }
-      document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/";
+<hr>
+
+<!-- テーマ切り替え -->
+<h2>テーマ切り替え</h2>
+<button class="btn light" onclick="setTheme('light')">ライトテーマ</button>
+<button class="btn dark" onclick="setTheme('dark')">ダークテーマ</button>
+
+<script>
+  /* ------------------------------
+     Cookie 基本関数
+  ------------------------------ */
+  function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${date.toUTCString()}; path=/`;
+  }
+
+  function getCookie(name) {
+    const cookies = document.cookie.split("; ");
+    for (const c of cookies) {
+      const [key, val] = c.split("=");
+      if (key === name) return decodeURIComponent(val);
+    }
+    return null;
+  }
+
+  function deleteCookie(name) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  }
+
+  /* ------------------------------
+     名前保存機能
+  ------------------------------ */
+  const greeting = document.getElementById("greeting");
+  const nameInput = document.getElementById("nameInput");
+
+  window.onload = () => {
+    // 名前復元
+    const savedName = getCookie("username");
+    if (savedName) {
+      greeting.textContent = `${savedName}さん、おかえりなさい！`;
+      nameInput.value = savedName;
     }
 
-    // Cookieを取得
-    function getCookie(name) {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(";");
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === " ") c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) {
-          return decodeURIComponent(c.substring(nameEQ.length, c.length));
-        }
-      }
-      return null;
+    // テーマ復元
+    const savedTheme = getCookie("theme");
+    if (savedTheme) applyTheme(savedTheme);
+  };
+
+  document.getElementById("saveNameBtn").onclick = () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+      alert("名前を入力してください");
+      return;
     }
+    setCookie("username", name, 30);
+    greeting.textContent = `${name}さん、保存しました！`;
+  };
 
-    // Cookie削除
-    function deleteCookie(name) {
-      document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.getElementById("clearNameBtn").onclick = () => {
+    deleteCookie("username");
+    greeting.textContent = "Cookieを削除しました。はじめまして！名前を教えてください。";
+    nameInput.value = "";
+  };
+
+  /* ------------------------------
+     テーマ保存機能
+  ------------------------------ */
+  function applyTheme(theme) {
+    if (theme === "dark") {
+      document.documentElement.style.setProperty("--bg", "#111");
+      document.documentElement.style.setProperty("--text", "#eee");
+    } else {
+      document.documentElement.style.setProperty("--bg", "#fff");
+      document.documentElement.style.setProperty("--text", "#000");
     }
+  }
 
-    const greeting = document.getElementById("greeting");
-    const nameInput = document.getElementById("nameInput");
-    const saveBtn = document.getElementById("saveBtn");
-    const clearBtn = document.getElementById("clearBtn");
+  function setTheme(theme) {
+    applyTheme(theme);
+    setCookie("theme", theme, 30);
+  }
+</script>
 
-    // ページ読み込み時にCookieをチェック
-    window.onload = function () {
-      const savedName = getCookie("username");
-      if (savedName) {
-        greeting.textContent = savedName + "さん、おかえりなさい！";
-        nameInput.value = savedName;
-      }
-    };
-
-    // 保存ボタン：名前をCookieに保存
-    saveBtn.onclick = function () {
-      const name = nameInput.value.trim();
-      if (!name) {
-        alert("名前を入力してください");
-        return;
-      }
-      setCookie("username", name, 7); // 7日間有効
-      greeting.textContent = name + "さん、保存しました！次回もこの名前で挨拶します。";
-    };
-
-    // 削除ボタン：Cookie削除
-    clearBtn.onclick = function () {
-      deleteCookie("username");
-      greeting.textContent = "Cookieを削除しました。はじめまして！名前を教えてください。";
-      nameInput.value = "";
-    };
-  </script>
 </body>
 </html>
