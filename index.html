@@ -2,28 +2,44 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Cookie統合デモ</title>
+
+<!-- ★スマホで縮小されないための最重要タグ -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cookie統合デモ（スマホ対応）</title>
 
 <style>
   :root {
     --bg: #ffffff;
     --text: #000000;
+    --btn-size: 1rem; /* スマホで見やすいサイズ */
   }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: sans-serif;
-    transition: 0.2s;
+    padding: 1rem;
+    line-height: 1.6;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.8rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
   }
 
   .btn {
-    padding: 10px 20px;
-    margin: 10px;
-    cursor: pointer;
+    display: inline-block;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    margin: 0.5rem 0;
     border: none;
     border-radius: 6px;
-    font-size: 16px;
+    cursor: pointer;
   }
 
   .light { background: #ddd; }
@@ -32,9 +48,8 @@
 </head>
 <body>
 
-<h1>Cookie統合デモ（名前＋テーマ）</h1>
+<h1>Cookie統合デモ（スマホ対応）</h1>
 
-<!-- 名前保存 -->
 <p id="greeting">はじめまして！名前を教えてください。</p>
 <input type="text" id="nameInput" placeholder="名前を入力">
 <button class="btn" id="saveNameBtn">名前を保存</button>
@@ -42,15 +57,11 @@
 
 <hr>
 
-<!-- テーマ切り替え -->
 <h2>テーマ切り替え</h2>
 <button class="btn light" onclick="setTheme('light')">ライトテーマ</button>
 <button class="btn dark" onclick="setTheme('dark')">ダークテーマ</button>
 
 <script>
-  /* ------------------------------
-     Cookie 基本関数
-  ------------------------------ */
   function setCookie(name, value, days) {
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
@@ -70,21 +81,16 @@
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
   }
 
-  /* ------------------------------
-     名前保存機能
-  ------------------------------ */
   const greeting = document.getElementById("greeting");
   const nameInput = document.getElementById("nameInput");
 
   window.onload = () => {
-    // 名前復元
     const savedName = getCookie("username");
     if (savedName) {
       greeting.textContent = `${savedName}さん、おかえりなさい！`;
       nameInput.value = savedName;
     }
 
-    // テーマ復元
     const savedTheme = getCookie("theme");
     if (savedTheme) applyTheme(savedTheme);
   };
@@ -105,9 +111,6 @@
     nameInput.value = "";
   };
 
-  /* ------------------------------
-     テーマ保存機能
-  ------------------------------ */
   function applyTheme(theme) {
     if (theme === "dark") {
       document.documentElement.style.setProperty("--bg", "#111");
