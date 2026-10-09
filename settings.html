@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>設定ページ</title>
+
+<style>
+  :root {
+    --bg: #ffffff;
+    --text: #000000;
+    --scale: 1;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: sans-serif;
+    padding: calc(1rem * var(--scale));
+    font-size: calc(1rem * var(--scale));
+    transition: 0.2s;
+  }
+
+  input {
+    width: 100%;
+    padding: calc(0.8rem * var(--scale));
+    font-size: calc(1rem * var(--scale));
+    margin-bottom: calc(1rem * var(--scale));
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .btn {
+    padding: calc(0.8rem * var(--scale)) calc(1.2rem * var(--scale));
+    font-size: calc(1rem * var(--scale));
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    margin: calc(0.5rem * var(--scale)) 0;
+  }
+
+  .light { background: #ddd; }
+  .dark { background: #333; color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>設定ページ</h1>
+
+<!-- 名前設定 -->
+<h2>名前設定</h2>
+<input type="text" id="nameInput" placeholder="名前を入力">
+<button class="btn" onclick="saveName()">保存</button>
+
+<hr>
+
+<!-- テーマ設定 -->
+<h2>テーマ設定</h2>
+<button class="btn light" onclick="setTheme('light')">ライト</button>
+<button class="btn dark" onclick="setTheme('dark')">ダーク</button>
+
+<hr>
+
+<!-- UIスケール設定 -->
+<h2>UIスケール</h2>
+<button class="btn" onclick="setScale(1)">標準</button>
+<button class="btn" onclick="setScale(1.2)">大</button>
+<button class="btn" onclick="setScale(1.4)">特大</button>
+
+<hr>
+
+<a href="index.html">
+  <button class="btn">戻る</button>
+</a>
+
+<script>
+  function save(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function load(key, def = null) {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : def;
+  }
+
+  function applyTheme(theme) {
+    if (theme === "dark") {
+      document.documentElement.style.setProperty("--bg", "#111");
+      document.documentElement.style.setProperty("--text", "#eee");
+    } else {
+      document.documentElement.style.setProperty("--bg", "#fff");
+      document.documentElement.style.setProperty("--text", "#000");
+    }
+  }
+
+  const osDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+  function applyOSTheme() {
+    const saved = load("theme");
+    applyTheme(saved ? saved : (osDark.matches ? "dark" : "light"));
+  }
+
+  osDark.addEventListener("change", applyOSTheme);
+
+  function saveName() {
+    const name = document.getElementById("nameInput").value.trim();
+    if (!name) {
+      alert("名前を入力してください");
+      return;
+    }
+    save("username", name);
+    alert("保存しました！");
+  }
+
+  function setTheme(theme) {
+    save("theme", theme);
+    applyTheme(theme);
+  }
+
+  function setScale(scale) {
+    save("scale", scale);
+    document.documentElement.style.setProperty("--scale", scale);
+  }
+
+  window.onload = () => {
+    document.getElementById("nameInput").value = load("username", "");
+
+    const scale = load("scale", 1);
+    document.documentElement.style.setProperty("--scale", scale);
+
+    applyOSTheme();
+  };
+</script>
+
+</body>
+</html>
